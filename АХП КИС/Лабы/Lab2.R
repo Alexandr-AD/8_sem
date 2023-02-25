@@ -181,23 +181,43 @@ X3<-rpois(n,a3)
 # p22<-c()
 # p23<-c()
 
-for (variable in c(1:300000)) {
-  p21[variable]<-(((lambda[1]*tau)^X1[variable])/factorial(X1[variable]))*exp(-a1)
-  p22[variable]<-(((lambda[2]*tau)^X2[variable])/factorial(X2[variable]))*exp(-a2)
-  p23[variable]<-(((lambda[3]*tau)^X3[variable])/factorial(X3[variable]))*exp(-a3)
+# print(paste("Мат. ожидание, дисперсия, ср. кв. отклонение", mean(X1), var(X1), sd(X1)))
+# 
+# print(paste("Мат. ожидание, дисперсия, ср. кв. отклонение", mean(X2), var(X2), sd(X2)))
+# 
+# print(paste("Мат. ожидание, дисперсия, ср. кв. отклонение", mean(X3), var(X3), sd(X3)))
+
+M123<-a1+a2+a3
+D123<-M123
+sd123<-sqrt(D123)
+K123<-sd123/D123*100
+
+print(paste("Теор. Мат. ожидание, дисперсия, ср. кв. отклонение, к. вариации", M123, D123, sd123, K123))
+print(paste("Мат. ожидание, дисперсия, ср. кв. отклонение, к. вариации", 
+            mean(X1+X2+X3), var(X1+X2+X3), sd(X1+X2+X3), sd(X1+X2+X3)/var(X1+X2+X3)*100 ))
+
+# Задание 2 _____________________________________________________________________________________________________________________________
+Variant<-1
+set.seed(Variant) 
+alpha<-runif(7)[7]
+alpha
+
+# Задание 3 _____________________________________________________________________________________________________________________________
+library(stats)
+n<-30000
+t <-c()
+for (i in c(1:n)){
+  i<-sum(rexp(5, alpha))
+  t <- c(t, i)
 }
+t
 
-p21
-p22
-p23
-
-M21<-sum(p21*X1)
-M21
-
-ME21<-mean(X1)
-ME21
-
-
-print(length(X1[x==0])/n)
-print(length(X1[x==1])/n)
-print(length(X1[x>=1])/n)
+mean(t)
+5/alpha
+var(t)
+5/(alpha^2)
+# Задание 5 _____________________________________________________________________________________________________________________________
+Variant<-1 
+set.seed(Variant) 
+alpha<-runif(100)[77]
+alpha

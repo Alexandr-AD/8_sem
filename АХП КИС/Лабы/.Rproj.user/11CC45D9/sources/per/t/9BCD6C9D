@@ -15,10 +15,10 @@
         "totalObservations": "100000",
         "displayedObservations": "100000",
         "variables": "3",
-        "cacheKey": "0312C872",
+        "cacheKey": "61BA2C8D",
         "object": "X123",
         "environment": "",
-        "contentUrl": "grid_resource/gridviewer.html?env=&obj=X123&cache_key=0312C872&max_cols=50",
+        "contentUrl": "grid_resource/gridviewer.html?env=&obj=X123&cache_key=61BA2C8D&max_cols=50",
         "preview": "0",
         "source_window_id": "",
         "Source": "Source"
