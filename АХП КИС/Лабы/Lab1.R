@@ -3,6 +3,7 @@ View(Data)
 install.packages("lpSolve")
 library(lpSolve)
 
+W<-Data
 cf<-lm(price~speed+ram+hd, Data)
 # cf2<-lm(price~ram+screen+multi, Data)
 # cf3<-lm(price~speed+hd+screen, Data)
@@ -25,10 +26,6 @@ max(Data$ram)
 min(Data$ram)
 max(Data$hd)
 min(Data$hd)
-max(Data$screen)
-min(Data$screen)
-max(Data$multi)
-min(Data$multi)
 
 min(Data$price)
 max(Data$price)
@@ -43,8 +40,11 @@ limc2<-c(8, 14)
 limc3<-c(5, 9)
 limc4<-c(6, 15)
 speed<-mean(Data$speed)
+speed
 ram<-mean(Data$ram)
+ram
 hd<-mean(Data$hd)
+hd
 
 const.mat<-matrix(c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # ограничение на x1
                     1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -82,15 +82,16 @@ const.mat<-matrix(c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # огран
                     0, 0, 0, 0, 1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4], 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4], 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4],
-                    0, 0.25*0.6, 0.25*0.3, 0.25*0.1, 0, 0.25*0.3, 0.25*0.3, 
-                    0.25*0.4, 0, 0.25*0.4, 0.25*0.5, 0.25*0.1, 0, 0.25*0.3, 
-                    0.25*0.3, 0.25*0.4), nrow=37, byrow=TRUE)
+                    0, 0.25*0.6, 0.25*0.3, 0.25*0.1, 0, 0.25*0.3, 0.25*0.3, 0.25*0.4, 0, 0.25*0.4, 0.25*0.5, 0.25*0.1, 0, 0.25*0.3, 0.25*0.3, 0.25*0.4,
+                    0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # ограничение нижнего уровня на C1 по суммарной speed и ram 
+                    0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), # ограничение нижнего уровня на C2 по суммарным ram и hd
+                  nrow=39, byrow=TRUE)
 
 const.dir<-c(">=", "<=", ">=", "<=", ">=", "<=", ">=", "<=",
        ">=", "<=", ">=", "<=", ">=", "<=", ">=", "<=",
        ">=", "<=", ">=", "<=", ">=", "<=", ">=", "<=",
        ">=", "<=", ">=", "<=", ">=", "<=", ">=", "<=",
-       "<=", "<=", "<=", "<=", "<=")
+       "<=", "<=", "<=", "<=", "<=", ">=", ">=")
 const.rhs<-c(limc1[1]*cf$coefficients[1], limc1[2]*cf$coefficients[1], limc1[1]*speed, limc1[2]*speed, 
        limc1[1]*ram, limc1[2]*ram, limc1[1]*hd, limc1[2]*hd,
        limc2[1]*cf$coefficients[1], limc2[2]*cf$coefficients[1], limc2[1]*speed, limc2[2]*speed, 
@@ -99,7 +100,7 @@ const.rhs<-c(limc1[1]*cf$coefficients[1], limc1[2]*cf$coefficients[1], limc1[1]*
        limc3[1]*ram, limc3[2]*ram, limc3[1]*hd, limc3[2]*hd,
        limc4[1]*cf$coefficients[1], limc4[2]*cf$coefficients[1], limc4[1]*speed, limc4[2]*speed, 
        limc4[1]*ram, limc4[2]*ram, limc4[1]*hd, limc4[2]*hd,
-       20000, 20000, 20000, 20000, 10000)
+       20000, 20000, 20000, 20000, 10000, 80, 1100)
 Res<-lp("min", objective.in, const.mat, const.dir, const.rhs)
 Res$solution
 
@@ -114,6 +115,7 @@ ideal_c3 <- c(Res$solution[10]/N3, Res$solution[11]/N3, Res$solution[12]/N3)
 ideal_c4 <- c(Res$solution[14]/N4, Res$solution[15]/N4, Res$solution[16]/N4)
 
 NewW1<-data.frame()
+# W<-data.frame()
 for (i in c(1:length(rownames(Data))))
 {
   if ((Data[i,3]>60) & (Data[i,4]>1000) & (Data[i,5]>20))
