@@ -16,6 +16,7 @@ cf$coefficients
 # cf3$coefficients
 # cf4$coefficients
 
+# H1
 objective.in<-c(1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4], 
                 1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4], 
                 1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4], 
@@ -82,16 +83,14 @@ const.mat<-matrix(c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # огран
                     0, 0, 0, 0, 1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4], 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4], 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4],
-                    0, 0.25*0.6, 0.25*0.3, 0.25*0.1, 0, 0.25*0.3, 0.25*0.3, 0.25*0.4, 0, 0.25*0.4, 0.25*0.5, 0.25*0.1, 0, 0.25*0.3, 0.25*0.3, 0.25*0.4,
-                    0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # ограничение нижнего уровня на C1 по суммарной speed и ram 
-                    0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), # ограничение нижнего уровня на C2 по суммарным ram и hd
-                  nrow=39, byrow=TRUE)
+                    0, 0.25*0.6, 0.25*0.3, 0.25*0.1, 0, 0.25*0.3, 0.25*0.3, 0.25*0.4, 0, 0.25*0.4, 0.25*0.5, 0.25*0.1, 0, 0.25*0.3, 0.25*0.3, 0.25*0.4),
+                  nrow=37, byrow=TRUE)
 
 const.dir<-c(">=", "<=", ">=", "<=", ">=", "<=", ">=", "<=",
        ">=", "<=", ">=", "<=", ">=", "<=", ">=", "<=",
        ">=", "<=", ">=", "<=", ">=", "<=", ">=", "<=",
        ">=", "<=", ">=", "<=", ">=", "<=", ">=", "<=",
-       "<=", "<=", "<=", "<=", "<=", ">=", ">=")
+       "<=", "<=", "<=", "<=", ">=")
 const.rhs<-c(limc1[1]*cf$coefficients[1], limc1[2]*cf$coefficients[1], limc1[1]*speed, limc1[2]*speed, 
        limc1[1]*ram, limc1[2]*ram, limc1[1]*hd, limc1[2]*hd,
        limc2[1]*cf$coefficients[1], limc2[2]*cf$coefficients[1], limc2[1]*speed, limc2[2]*speed, 
@@ -100,19 +99,153 @@ const.rhs<-c(limc1[1]*cf$coefficients[1], limc1[2]*cf$coefficients[1], limc1[1]*
        limc3[1]*ram, limc3[2]*ram, limc3[1]*hd, limc3[2]*hd,
        limc4[1]*cf$coefficients[1], limc4[2]*cf$coefficients[1], limc4[1]*speed, limc4[2]*speed, 
        limc4[1]*ram, limc4[2]*ram, limc4[1]*hd, limc4[2]*hd,
-       20000, 20000, 20000, 20000, 10000, 80, 1100)
-Res<-lp("min", objective.in, const.mat, const.dir, const.rhs)
-Res$solution
+       20000, 20000, 20000, 20000, 1500)
+ResH1<-lp("min", objective.in, const.mat, const.dir, const.rhs)
+ResH1$solution
 
-N1<-Res$solution[1]/cf$coefficients[1]
-N2<-Res$solution[5]/cf$coefficients[1]
-N3<-Res$solution[9]/cf$coefficients[1]
-N4<-Res$solution[13]/cf$coefficients[1]
+# H2
+objective.in<-c(0, 0.25*0.6, 0.25*0.3, 0.25*0.1, 
+                0, 0.25*0.3, 0.25*0.3, 0.25*0.4, 
+                0, 0.25*0.4, 0.25*0.5, 0.25*0.1, 
+                0, 0.25*0.3, 0.25*0.3, 0.25*0.4)
 
-ideal_c1 <- c(Res$solution[2]/N1, Res$solution[3]/N1, Res$solution[4]/N1)
-ideal_c2 <- c(Res$solution[6]/N2, Res$solution[7]/N2, Res$solution[8]/N2)
-ideal_c3 <- c(Res$solution[10]/N3, Res$solution[11]/N3, Res$solution[12]/N3)
-ideal_c4 <- c(Res$solution[14]/N4, Res$solution[15]/N4, Res$solution[16]/N4)
+const.mat<-matrix(c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # ограничение на x1
+                    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # ограничение на x5
+                    0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, # ограничение на x9
+                    0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, # ограничение на x13
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+                    1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4], 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4], 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4],
+                    1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4], 1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4], 1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4], 1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4]),
+                  nrow=37, byrow=TRUE)
+
+const.dir<-c(">=", "<=", ">=", "<=", ">=", "<=", ">=", "<=",
+             ">=", "<=", ">=", "<=", ">=", "<=", ">=", "<=",
+             ">=", "<=", ">=", "<=", ">=", "<=", ">=", "<=",
+             ">=", "<=", ">=", "<=", ">=", "<=", ">=", "<=",
+             "<=", "<=", "<=", "<=", "<=")
+const.rhs<-c(limc1[1]*cf$coefficients[1], limc1[2]*cf$coefficients[1], limc1[1]*speed, limc1[2]*speed, 
+             limc1[1]*ram, limc1[2]*ram, limc1[1]*hd, limc1[2]*hd,
+             limc2[1]*cf$coefficients[1], limc2[2]*cf$coefficients[1], limc2[1]*speed, limc2[2]*speed, 
+             limc2[1]*ram, limc2[2]*ram, limc2[1]*hd, limc2[2]*hd,
+             limc3[1]*cf$coefficients[1], limc3[2]*cf$coefficients[1], limc3[1]*speed, limc3[2]*speed, 
+             limc3[1]*ram, limc3[2]*ram, limc3[1]*hd, limc3[2]*hd,
+             limc4[1]*cf$coefficients[1], limc4[2]*cf$coefficients[1], limc4[1]*speed, limc4[2]*speed, 
+             limc4[1]*ram, limc4[2]*ram, limc4[1]*hd, limc4[2]*hd,
+             20000, 20000, 20000, 20000, 80000)
+ResH2<-lp("max", objective.in, const.mat, const.dir, const.rhs)
+ResH2$solution
+
+HH1<-function(p){return(sum(c(1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4], 
+                              1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4], 
+                              1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4], 
+                              1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4])*p))}
+HH2<-function(p){return(sum(c(0, 0.25*0.6, 0.25*0.3, 0.25*0.1, 
+                                 0, 0.25*0.3, 0.25*0.3, 0.25*0.4, 
+                                 0, 0.25*0.4, 0.25*0.5, 0.25*0.1, 
+                                 0, 0.25*0.3, 0.25*0.3, 0.25*0.4)*p))}
+HH1(ResH1$solution)
+optProiz<-HH2(ResH1$solution)
+optProiz
+
+const.mat<-matrix(c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # ограничение на x1
+                    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, # ограничение на x5
+                    0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, # ограничение на x9
+                    0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, # ограничение на x13
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+                    1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4], 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4], 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, cf$coefficients[2], cf$coefficients[3], cf$coefficients[4],
+                    0, 0.25*0.6, 0.25*0.3, 0.25*0.1, 0, 0.25*0.3, 0.25*0.3, 0.25*0.4, 0, 0.25*0.4, 0.25*0.5, 0.25*0.1, 0, 0.25*0.3, 0.25*0.3, 0.25*0.4),
+                  nrow=37, byrow=TRUE)
+
+const.dir<-c(">=", "<=", ">=", "<=", ">=", "<=", ">=", "<=",
+             ">=", "<=", ">=", "<=", ">=", "<=", ">=", "<=",
+             ">=", "<=", ">=", "<=", ">=", "<=", ">=", "<=",
+             ">=", "<=", ">=", "<=", ">=", "<=", ">=", "<=",
+             "<=", "<=", "<=", "<=", ">=")
+const.rhs<-c(limc1[1]*cf$coefficients[1], limc1[2]*cf$coefficients[1], limc1[1]*speed, limc1[2]*speed, 
+             limc1[1]*ram, limc1[2]*ram, limc1[1]*hd, limc1[2]*hd,
+             limc2[1]*cf$coefficients[1], limc2[2]*cf$coefficients[1], limc2[1]*speed, limc2[2]*speed, 
+             limc2[1]*ram, limc2[2]*ram, limc2[1]*hd, limc2[2]*hd,
+             limc3[1]*cf$coefficients[1], limc3[2]*cf$coefficients[1], limc3[1]*speed, limc3[2]*speed, 
+             limc3[1]*ram, limc3[2]*ram, limc3[1]*hd, limc3[2]*hd,
+             limc4[1]*cf$coefficients[1], limc4[2]*cf$coefficients[1], limc4[1]*speed, limc4[2]*speed, 
+             limc4[1]*ram, limc4[2]*ram, limc4[1]*hd, limc4[2]*hd,
+             20000, 20000, 20000, 20000, optProiz)
+ResHH1<-lp("min", objective.in, const.mat, const.dir, const.rhs)
+ResHH1$solution
+
+HH1(ResHH1$solution)
+HH2(ResHH1$solution)
+
+
+N1<-ResHH1$solution[1]/cf$coefficients[1]
+N2<-ResHH1$solution[5]/cf$coefficients[1]
+N3<-ResHH1$solution[9]/cf$coefficients[1]
+N4<-ResHH1$solution[13]/cf$coefficients[1]
+
+ideal_c1 <- c(ResHH1$solution[2]/N1, ResHH1$solution[3]/N1, ResHH1$solution[4]/N1)
+ideal_c2 <- c(ResHH1$solution[6]/N2, ResHH1$solution[7]/N2, ResHH1$solution[8]/N2)
+ideal_c3 <- c(ResHH1$solution[10]/N3, ResHH1$solution[11]/N3, ResHH1$solution[12]/N3)
+ideal_c4 <- c(ResHH1$solution[14]/N4, ResHH1$solution[15]/N4, ResHH1$solution[16]/N4)
 
 NewW1<-data.frame()
 # W<-data.frame()
@@ -305,3 +438,4 @@ for (i in c(1,2,3,4))
       cat("\n")
     }
 }
+
