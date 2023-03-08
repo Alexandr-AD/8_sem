@@ -1,4 +1,7 @@
 # 1 задание ------------------------------------------------------------------
+install.packages("matrixcalc")
+library(matrixcalc)
+
 Variant<-1
 set.seed(Variant) 
 k<-sample(c(4:9),1)
@@ -23,9 +26,6 @@ print(paste("k=",as.character(k)))
 p0<-matrix(c(1, 0, 0, 0), ncol=4, nrow=1, byrow=TRUE)
 print(p0)
 print(P)
-
-install.packages("matrixcalc")
-library(matrixcalc)
 
 p0 %*% matrix.power(data.matrix(P),k)
 p0 %*% matrix.power(data.matrix(P),k-1)
@@ -147,6 +147,7 @@ for (j in c(1:100000)) {
   else
     if(lstate==4)
       sk2[4] = sk2[4]+1
+  lstate = 1
 }
 sk
 sk1
@@ -175,3 +176,10 @@ p0 %*% matrix.power(data.matrix(P),k-1)
 spos2
 p0 %*% matrix.power(data.matrix(P),k-2)
 # 2 задание ------------------------------------------------------------------
+
+Variant<-1
+set.seed(Variant) 
+k<-sample(c(10:25),1)
+t1<-sample(c(14:20),1)
+t2<-sample(c(2:5),1)
+View(data.frame(k,t1,t2))
