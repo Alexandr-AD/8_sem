@@ -221,3 +221,14 @@ Variant<-1
 set.seed(Variant) 
 alpha<-runif(100)[77]
 alpha
+M_5<-2/alpha
+M_5
+D_5<-2/alpha^2
+D_5
+
+n<-100000
+z1<-runif(n,0,2)
+z2<-runif(n,0,10)
+s<-sd(z1+z2)
+s<-s^2
+s
