@@ -183,3 +183,62 @@ k<-sample(c(10:25),1)
 t1<-sample(c(14:20),1)
 t2<-sample(c(2:5),1)
 View(data.frame(k,t1,t2))
+
+F1 <- function(lk, lt1, lt2, N) {
+  lambda1 = 1/lt1
+  lambda2 = 1/lt2
+  
+  set.seed(Variant)
+  
+  getTask <- vector(mode='double', length=N*lk)
+  getTask[1:lk] <- rexp(lk, lambda1)
+  for (i in 1:(N-1)) {
+    getTask[(i*lk+1):(i*lk+lk)] <- getTask[((i-1)*lk+1):(i*lk)] + rexp(lk, lambda1)
+  }
+
+  getTask <- sort(getTask)
+  
+  freeServ <- vector(mode='double', length=length(getTask))
+  qSize <- vector(mode='integer', length=length(getTask))
+  waiTime <- vector(mode='double', length=length(getTask))
+  decrQ <- vector(mode='double', length=length(getTask))
+  
+  time_free <- 0 
+  
+  for (i in 1:length(getTask)) {
+    recTime <- getTask[i]
+    requTime <- rexp(1, lambda2)
+    
+    if (time_free < recTime) {
+      time_free <- recTime + requTime
+      waiTime[i] <- requTime 
+    } else {
+      time_free <- time_free + requTime
+      waiTime[i] <- time_free - recTime 
+      decrQ <- append(decrQ, time_free)
+    }
+    decrQ <- decrQ[decrQ > recTime]
+    qSize[i] <- length(decrQ)
+    freeServ[i] <- time_free
+  }
+  
+  return(list(
+    getTask = getTask,
+    freeServ = freeServ,
+    qSize = qSize,
+    waiTime = waiTime
+  ))
+}
+
+F1_res_2 = F1(k, 80, t2, 10000)
+
+# вероятность того, что программа не будет выполнена сразу же 
+length(
+  F1_res_2$qSize[F1_res_2$qSize > 0]
+) / length(F1_res_2$qSize)
+
+# среднее время до получения результатов
+mean(F1_res_2$waiTime)
+
+# среднее количество ожидающих программ
+mean(F1_res_2$qSize)
