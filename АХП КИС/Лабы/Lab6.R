@@ -1,6 +1,5 @@
-setwd("C:/Users/aalex/OneDrive/Рабочий стол/Учёба/8_sem/АХП КИС/Лабы")
 Variant<-1
-set.seed(Variant)
+set.seed(Variant) 
 K<-sample(c(3:6),1)
 M<-sample(c(1:3),1)
 N<-sample(c(1:3),1)

@@ -1,0 +1,498 @@
+
+GccApplication1.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         0000030a  00000000  00000000  00000054  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000000  00800060  00800060  0000035e  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .comment      00000030  00000000  00000000  0000035e  2**0
+                  CONTENTS, READONLY
+  3 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000390  2**2
+                  CONTENTS, READONLY
+  4 .debug_aranges 00000030  00000000  00000000  000003cc  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_info   00000c9d  00000000  00000000  000003fc  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_abbrev 000005bc  00000000  00000000  00001099  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_line   0000035b  00000000  00000000  00001655  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_frame  00000044  00000000  00000000  000019b0  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_str    0000033b  00000000  00000000  000019f4  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_ranges 00000020  00000000  00000000  00001d2f  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0c 94 2a 00 	jmp	0x54	; 0x54 <__ctors_end>
+   4:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+   8:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+   c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  10:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  14:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  18:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  1c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  20:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  24:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  28:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  2c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  30:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  34:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  38:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  3c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  40:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  44:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  48:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  4c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  50:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+
+00000054 <__ctors_end>:
+  54:	11 24       	eor	r1, r1
+  56:	1f be       	out	0x3f, r1	; 63
+  58:	cf e5       	ldi	r28, 0x5F	; 95
+  5a:	d4 e0       	ldi	r29, 0x04	; 4
+  5c:	de bf       	out	0x3e, r29	; 62
+  5e:	cd bf       	out	0x3d, r28	; 61
+  60:	0e 94 6c 01 	call	0x2d8	; 0x2d8 <main>
+  64:	0c 94 83 01 	jmp	0x306	; 0x306 <_exit>
+
+00000068 <__bad_interrupt>:
+  68:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
+
+0000006c <note_delay>:
+#include <avr/io.h>
+#include <avr/delay.h>
+
+void note_delay(int duration, int note)      // Функция вывода ноты на несколько мс
+{
+	TCNT0=0;                                // Обнуление таймера
+  6c:	12 be       	out	0x32, r1	; 50
+	PORTB = note;                           // Вывод ноты
+  6e:	68 bb       	out	0x18, r22	; 24
+	int time_ms = 100 * duration;           // Расчёт длительности ноты, длительность целой ноты 1,6 с
+  70:	24 e6       	ldi	r18, 0x64	; 100
+  72:	28 9f       	mul	r18, r24
+  74:	a0 01       	movw	r20, r0
+  76:	29 9f       	mul	r18, r25
+  78:	50 0d       	add	r21, r0
+  7a:	11 24       	eor	r1, r1
+
+	while(1)
+	{
+		if(TCNT0>=time_ms) break;           // Если таймер достиг нужного значения, завершить выполнение
+  7c:	22 b7       	in	r18, 0x32	; 50
+  7e:	30 e0       	ldi	r19, 0x00	; 0
+  80:	24 17       	cp	r18, r20
+  82:	35 07       	cpc	r19, r21
+  84:	34 f4       	brge	.+12     	; 0x92 <note_delay+0x26>
+		if(TCNT0==255)                      // Если длительность сигнала больше максимального значения счётчика
+  86:	92 b7       	in	r25, 0x32	; 50
+  88:	9f 3f       	cpi	r25, 0xFF	; 255
+  8a:	c1 f7       	brne	.-16     	; 0x7c <note_delay+0x10>
+		{
+			time_ms -= 256;
+  8c:	5a 95       	dec	r21
+			TCNT0=0;
+  8e:	12 be       	out	0x32, r1	; 50
+  90:	f5 cf       	rjmp	.-22     	; 0x7c <note_delay+0x10>
+		}
+	}
+	PORTB = 0;                              // Вывод на порт B нуля для разделения нот
+  92:	18 ba       	out	0x18, r1	; 24
+  94:	08 95       	ret
+
+00000096 <music>:
+}
+
+void music()
+{
+	// Такт 1
+	note_delay(4, 0x01);                // Нота G1, длительность 1/4
+  96:	61 e0       	ldi	r22, 0x01	; 1
+  98:	70 e0       	ldi	r23, 0x00	; 0
+  9a:	84 e0       	ldi	r24, 0x04	; 4
+  9c:	90 e0       	ldi	r25, 0x00	; 0
+  9e:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	//note_delay(1, 0x00);                	// Пауза, длительность 1/16
+	note_delay(4, 0x02);                // Нота C1, длительность 1/4
+  a2:	62 e0       	ldi	r22, 0x02	; 2
+  a4:	70 e0       	ldi	r23, 0x00	; 0
+  a6:	84 e0       	ldi	r24, 0x04	; 4
+  a8:	90 e0       	ldi	r25, 0x00	; 0
+  aa:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	//note_delay(1, 0x00);                	// Пауза, длительность 1/16
+	note_delay(4, 0x04);                // Нота H1, длительность 1/4
+  ae:	64 e0       	ldi	r22, 0x04	; 4
+  b0:	70 e0       	ldi	r23, 0x00	; 0
+  b2:	84 e0       	ldi	r24, 0x04	; 4
+  b4:	90 e0       	ldi	r25, 0x00	; 0
+  b6:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x02);                // Нота C1, длительность 1/4
+  ba:	62 e0       	ldi	r22, 0x02	; 2
+  bc:	70 e0       	ldi	r23, 0x00	; 0
+  be:	84 e0       	ldi	r24, 0x04	; 4
+  c0:	90 e0       	ldi	r25, 0x00	; 0
+  c2:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	
+	// Такт 2
+	note_delay(4, 0x08);                // Нота D2, длительность 1/4
+  c6:	68 e0       	ldi	r22, 0x08	; 8
+  c8:	70 e0       	ldi	r23, 0x00	; 0
+  ca:	84 e0       	ldi	r24, 0x04	; 4
+  cc:	90 e0       	ldi	r25, 0x00	; 0
+  ce:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	//note_delay(1, 0x00);                	// Пауза, длительность 1/16
+	note_delay(4, 0x10);                // Нота A1, длительность 1/4
+  d2:	60 e1       	ldi	r22, 0x10	; 16
+  d4:	70 e0       	ldi	r23, 0x00	; 0
+  d6:	84 e0       	ldi	r24, 0x04	; 4
+  d8:	90 e0       	ldi	r25, 0x00	; 0
+  da:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(8, 0x08);                // Нота D2, длительность 1/2
+  de:	68 e0       	ldi	r22, 0x08	; 8
+  e0:	70 e0       	ldi	r23, 0x00	; 0
+  e2:	88 e0       	ldi	r24, 0x08	; 8
+  e4:	90 e0       	ldi	r25, 0x00	; 0
+  e6:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	
+
+	// Такт 3
+	note_delay(4, 0x02);                // Нота C1, длительность 1/4
+  ea:	62 e0       	ldi	r22, 0x02	; 2
+  ec:	70 e0       	ldi	r23, 0x00	; 0
+  ee:	84 e0       	ldi	r24, 0x04	; 4
+  f0:	90 e0       	ldi	r25, 0x00	; 0
+  f2:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x04);                // Нота H1, длительность 1/4
+  f6:	64 e0       	ldi	r22, 0x04	; 4
+  f8:	70 e0       	ldi	r23, 0x00	; 0
+  fa:	84 e0       	ldi	r24, 0x04	; 4
+  fc:	90 e0       	ldi	r25, 0x00	; 0
+  fe:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x10);                // Нота A1, длительность 1/4
+ 102:	60 e1       	ldi	r22, 0x10	; 16
+ 104:	70 e0       	ldi	r23, 0x00	; 0
+ 106:	84 e0       	ldi	r24, 0x04	; 4
+ 108:	90 e0       	ldi	r25, 0x00	; 0
+ 10a:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x04);                // Нота H1, длительность 1/4
+ 10e:	64 e0       	ldi	r22, 0x04	; 4
+ 110:	70 e0       	ldi	r23, 0x00	; 0
+ 112:	84 e0       	ldi	r24, 0x04	; 4
+ 114:	90 e0       	ldi	r25, 0x00	; 0
+ 116:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	
+	
+	// Такт 4
+	note_delay(16, 0x02);                // Нота C1, длительность 1
+ 11a:	62 e0       	ldi	r22, 0x02	; 2
+ 11c:	70 e0       	ldi	r23, 0x00	; 0
+ 11e:	80 e1       	ldi	r24, 0x10	; 16
+ 120:	90 e0       	ldi	r25, 0x00	; 0
+ 122:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	
+	// Такт 5
+	note_delay(4, 0x01);                // Нота G1, длительность 1/4
+ 126:	61 e0       	ldi	r22, 0x01	; 1
+ 128:	70 e0       	ldi	r23, 0x00	; 0
+ 12a:	84 e0       	ldi	r24, 0x04	; 4
+ 12c:	90 e0       	ldi	r25, 0x00	; 0
+ 12e:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	//note_delay(1, 0x00);                	// Пауза, длительность 1/16
+	note_delay(4, 0x02);                // Нота C1, длительность 1/4
+ 132:	62 e0       	ldi	r22, 0x02	; 2
+ 134:	70 e0       	ldi	r23, 0x00	; 0
+ 136:	84 e0       	ldi	r24, 0x04	; 4
+ 138:	90 e0       	ldi	r25, 0x00	; 0
+ 13a:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	//note_delay(1, 0x00);                	// Пауза, длительность 1/16
+	note_delay(4, 0x04);                // Нота H1, длительность 1/4
+ 13e:	64 e0       	ldi	r22, 0x04	; 4
+ 140:	70 e0       	ldi	r23, 0x00	; 0
+ 142:	84 e0       	ldi	r24, 0x04	; 4
+ 144:	90 e0       	ldi	r25, 0x00	; 0
+ 146:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x02);                // Нота C1, длительность 1/4
+ 14a:	62 e0       	ldi	r22, 0x02	; 2
+ 14c:	70 e0       	ldi	r23, 0x00	; 0
+ 14e:	84 e0       	ldi	r24, 0x04	; 4
+ 150:	90 e0       	ldi	r25, 0x00	; 0
+ 152:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	
+	// Такт 6
+	note_delay(4, 0x08);                // Нота D2, длительность 1/4
+ 156:	68 e0       	ldi	r22, 0x08	; 8
+ 158:	70 e0       	ldi	r23, 0x00	; 0
+ 15a:	84 e0       	ldi	r24, 0x04	; 4
+ 15c:	90 e0       	ldi	r25, 0x00	; 0
+ 15e:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	//note_delay(1, 0x00);                	// Пауза, длительность 1/16
+	note_delay(4, 0x10);                // Нота A1, длительность 1/4
+ 162:	60 e1       	ldi	r22, 0x10	; 16
+ 164:	70 e0       	ldi	r23, 0x00	; 0
+ 166:	84 e0       	ldi	r24, 0x04	; 4
+ 168:	90 e0       	ldi	r25, 0x00	; 0
+ 16a:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(8, 0x08);                // Нота D2, длительность 1/2
+ 16e:	68 e0       	ldi	r22, 0x08	; 8
+ 170:	70 e0       	ldi	r23, 0x00	; 0
+ 172:	88 e0       	ldi	r24, 0x08	; 8
+ 174:	90 e0       	ldi	r25, 0x00	; 0
+ 176:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	
+
+	// Такт 7
+	note_delay(4, 0x02);                // Нота C1, длительность 1/4
+ 17a:	62 e0       	ldi	r22, 0x02	; 2
+ 17c:	70 e0       	ldi	r23, 0x00	; 0
+ 17e:	84 e0       	ldi	r24, 0x04	; 4
+ 180:	90 e0       	ldi	r25, 0x00	; 0
+ 182:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x04);                // Нота H1, длительность 1/4
+ 186:	64 e0       	ldi	r22, 0x04	; 4
+ 188:	70 e0       	ldi	r23, 0x00	; 0
+ 18a:	84 e0       	ldi	r24, 0x04	; 4
+ 18c:	90 e0       	ldi	r25, 0x00	; 0
+ 18e:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x10);                // Нота A1, длительность 1/4
+ 192:	60 e1       	ldi	r22, 0x10	; 16
+ 194:	70 e0       	ldi	r23, 0x00	; 0
+ 196:	84 e0       	ldi	r24, 0x04	; 4
+ 198:	90 e0       	ldi	r25, 0x00	; 0
+ 19a:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x04);                // Нота H1, длительность 1/4
+ 19e:	64 e0       	ldi	r22, 0x04	; 4
+ 1a0:	70 e0       	ldi	r23, 0x00	; 0
+ 1a2:	84 e0       	ldi	r24, 0x04	; 4
+ 1a4:	90 e0       	ldi	r25, 0x00	; 0
+ 1a6:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	
+	
+	// Такт 8
+	note_delay(16, 0x02);                // Нота C1, длительность 1
+ 1aa:	62 e0       	ldi	r22, 0x02	; 2
+ 1ac:	70 e0       	ldi	r23, 0x00	; 0
+ 1ae:	80 e1       	ldi	r24, 0x10	; 16
+ 1b0:	90 e0       	ldi	r25, 0x00	; 0
+ 1b2:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+
+	// Такт 9
+	note_delay(4, 0x20);                // Нота E2, длительность 1/4
+ 1b6:	60 e2       	ldi	r22, 0x20	; 32
+ 1b8:	70 e0       	ldi	r23, 0x00	; 0
+ 1ba:	84 e0       	ldi	r24, 0x04	; 4
+ 1bc:	90 e0       	ldi	r25, 0x00	; 0
+ 1be:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x20);                // Нота E2, длительность 1/4
+ 1c2:	60 e2       	ldi	r22, 0x20	; 32
+ 1c4:	70 e0       	ldi	r23, 0x00	; 0
+ 1c6:	84 e0       	ldi	r24, 0x04	; 4
+ 1c8:	90 e0       	ldi	r25, 0x00	; 0
+ 1ca:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x20);                // Нота E2, длительность 1/4
+ 1ce:	60 e2       	ldi	r22, 0x20	; 32
+ 1d0:	70 e0       	ldi	r23, 0x00	; 0
+ 1d2:	84 e0       	ldi	r24, 0x04	; 4
+ 1d4:	90 e0       	ldi	r25, 0x00	; 0
+ 1d6:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x20);                // Нота E2, длительность 1/4
+ 1da:	60 e2       	ldi	r22, 0x20	; 32
+ 1dc:	70 e0       	ldi	r23, 0x00	; 0
+ 1de:	84 e0       	ldi	r24, 0x04	; 4
+ 1e0:	90 e0       	ldi	r25, 0x00	; 0
+ 1e2:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	
+	// Такт 10
+	note_delay(4, 0x20);                // Нота E2, длительность 1/4
+ 1e6:	60 e2       	ldi	r22, 0x20	; 32
+ 1e8:	70 e0       	ldi	r23, 0x00	; 0
+ 1ea:	84 e0       	ldi	r24, 0x04	; 4
+ 1ec:	90 e0       	ldi	r25, 0x00	; 0
+ 1ee:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x20);                // Нота E2, длительность 1/4
+ 1f2:	60 e2       	ldi	r22, 0x20	; 32
+ 1f4:	70 e0       	ldi	r23, 0x00	; 0
+ 1f6:	84 e0       	ldi	r24, 0x04	; 4
+ 1f8:	90 e0       	ldi	r25, 0x00	; 0
+ 1fa:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(8, 0x20);                // Нота E2, длительность 1/2
+ 1fe:	60 e2       	ldi	r22, 0x20	; 32
+ 200:	70 e0       	ldi	r23, 0x00	; 0
+ 202:	88 e0       	ldi	r24, 0x08	; 8
+ 204:	90 e0       	ldi	r25, 0x00	; 0
+ 206:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	
+	// Такт 11
+	note_delay(4, 0x20);                // Нота E2, длительность 1/4
+ 20a:	60 e2       	ldi	r22, 0x20	; 32
+ 20c:	70 e0       	ldi	r23, 0x00	; 0
+ 20e:	84 e0       	ldi	r24, 0x04	; 4
+ 210:	90 e0       	ldi	r25, 0x00	; 0
+ 212:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x08);                // Нота D2, длительность 1/4
+ 216:	68 e0       	ldi	r22, 0x08	; 8
+ 218:	70 e0       	ldi	r23, 0x00	; 0
+ 21a:	84 e0       	ldi	r24, 0x04	; 4
+ 21c:	90 e0       	ldi	r25, 0x00	; 0
+ 21e:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x02);                // Нота C1, длительность 1/4
+ 222:	62 e0       	ldi	r22, 0x02	; 2
+ 224:	70 e0       	ldi	r23, 0x00	; 0
+ 226:	84 e0       	ldi	r24, 0x04	; 4
+ 228:	90 e0       	ldi	r25, 0x00	; 0
+ 22a:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x08);                // Нота D2, длительность 1/4
+ 22e:	68 e0       	ldi	r22, 0x08	; 8
+ 230:	70 e0       	ldi	r23, 0x00	; 0
+ 232:	84 e0       	ldi	r24, 0x04	; 4
+ 234:	90 e0       	ldi	r25, 0x00	; 0
+ 236:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	
+	// Такт 12
+	note_delay(16, 0x20);                // Нота E2, длительность 1
+ 23a:	60 e2       	ldi	r22, 0x20	; 32
+ 23c:	70 e0       	ldi	r23, 0x00	; 0
+ 23e:	80 e1       	ldi	r24, 0x10	; 16
+ 240:	90 e0       	ldi	r25, 0x00	; 0
+ 242:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	
+	// Такт 13
+	note_delay(4, 0x20);                // Нота E2, длительность 1/4
+ 246:	60 e2       	ldi	r22, 0x20	; 32
+ 248:	70 e0       	ldi	r23, 0x00	; 0
+ 24a:	84 e0       	ldi	r24, 0x04	; 4
+ 24c:	90 e0       	ldi	r25, 0x00	; 0
+ 24e:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x20);                // Нота E2, длительность 1/4
+ 252:	60 e2       	ldi	r22, 0x20	; 32
+ 254:	70 e0       	ldi	r23, 0x00	; 0
+ 256:	84 e0       	ldi	r24, 0x04	; 4
+ 258:	90 e0       	ldi	r25, 0x00	; 0
+ 25a:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x40);                // Нота F2, длительность 1/4
+ 25e:	60 e4       	ldi	r22, 0x40	; 64
+ 260:	70 e0       	ldi	r23, 0x00	; 0
+ 262:	84 e0       	ldi	r24, 0x04	; 4
+ 264:	90 e0       	ldi	r25, 0x00	; 0
+ 266:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x20);                // Нота E2, длительность 1/4
+ 26a:	60 e2       	ldi	r22, 0x20	; 32
+ 26c:	70 e0       	ldi	r23, 0x00	; 0
+ 26e:	84 e0       	ldi	r24, 0x04	; 4
+ 270:	90 e0       	ldi	r25, 0x00	; 0
+ 272:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	
+	// Такт 14
+	note_delay(4, 0x08);                // Нота D2, длительность 1/4
+ 276:	68 e0       	ldi	r22, 0x08	; 8
+ 278:	70 e0       	ldi	r23, 0x00	; 0
+ 27a:	84 e0       	ldi	r24, 0x04	; 4
+ 27c:	90 e0       	ldi	r25, 0x00	; 0
+ 27e:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x10);                // Нота A1, длительность 1/4
+ 282:	60 e1       	ldi	r22, 0x10	; 16
+ 284:	70 e0       	ldi	r23, 0x00	; 0
+ 286:	84 e0       	ldi	r24, 0x04	; 4
+ 288:	90 e0       	ldi	r25, 0x00	; 0
+ 28a:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(8, 0x08);                // Нота D2, длительность 1/2
+ 28e:	68 e0       	ldi	r22, 0x08	; 8
+ 290:	70 e0       	ldi	r23, 0x00	; 0
+ 292:	88 e0       	ldi	r24, 0x08	; 8
+ 294:	90 e0       	ldi	r25, 0x00	; 0
+ 296:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	
+	// Такт 15
+	note_delay(4, 0x02);                // Нота C1, длительность 1/4
+ 29a:	62 e0       	ldi	r22, 0x02	; 2
+ 29c:	70 e0       	ldi	r23, 0x00	; 0
+ 29e:	84 e0       	ldi	r24, 0x04	; 4
+ 2a0:	90 e0       	ldi	r25, 0x00	; 0
+ 2a2:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x04);                // Нота H1, длительность 1/4
+ 2a6:	64 e0       	ldi	r22, 0x04	; 4
+ 2a8:	70 e0       	ldi	r23, 0x00	; 0
+ 2aa:	84 e0       	ldi	r24, 0x04	; 4
+ 2ac:	90 e0       	ldi	r25, 0x00	; 0
+ 2ae:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x10);                // Нота A1, длительность 1/4
+ 2b2:	60 e1       	ldi	r22, 0x10	; 16
+ 2b4:	70 e0       	ldi	r23, 0x00	; 0
+ 2b6:	84 e0       	ldi	r24, 0x04	; 4
+ 2b8:	90 e0       	ldi	r25, 0x00	; 0
+ 2ba:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	note_delay(4, 0x04);                // Нота H1, длительность 1/4
+ 2be:	64 e0       	ldi	r22, 0x04	; 4
+ 2c0:	70 e0       	ldi	r23, 0x00	; 0
+ 2c2:	84 e0       	ldi	r24, 0x04	; 4
+ 2c4:	90 e0       	ldi	r25, 0x00	; 0
+ 2c6:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+	
+	// Такт 16
+	note_delay(16, 0x02);                // Нота C1, длительность 1
+ 2ca:	62 e0       	ldi	r22, 0x02	; 2
+ 2cc:	70 e0       	ldi	r23, 0x00	; 0
+ 2ce:	80 e1       	ldi	r24, 0x10	; 16
+ 2d0:	90 e0       	ldi	r25, 0x00	; 0
+ 2d2:	0e 94 36 00 	call	0x6c	; 0x6c <note_delay>
+ 2d6:	08 95       	ret
+
+000002d8 <main>:
+}
+
+
+int main (void)
+{
+	DDRD = 0x00;                            // Назначение порта D на ввод
+ 2d8:	11 ba       	out	0x11, r1	; 17
+	DDRB = 0xFF;                            // Назначение порта B на вывод
+ 2da:	8f ef       	ldi	r24, 0xFF	; 255
+ 2dc:	87 bb       	out	0x17, r24	; 23
+	PORTD = 0xFF;
+ 2de:	82 bb       	out	0x12, r24	; 18
+	TCCR0 = 0b101;                          // Деление тактовой частоты на 1024
+ 2e0:	85 e0       	ldi	r24, 0x05	; 5
+ 2e2:	83 bf       	out	0x33, r24	; 51
+	OSCCAL = 135;                           // Коррекция тактовой частоты
+ 2e4:	87 e8       	ldi	r24, 0x87	; 135
+ 2e6:	81 bf       	out	0x31, r24	; 49
+
+
+	while(1)
+	{
+		if (PIND == 0x01)
+ 2e8:	80 b3       	in	r24, 0x10	; 16
+ 2ea:	81 30       	cpi	r24, 0x01	; 1
+ 2ec:	19 f4       	brne	.+6      	; 0x2f4 <main+0x1c>
+		{
+			music();
+ 2ee:	0e 94 4b 00 	call	0x96	; 0x96 <music>
+ 2f2:	fa cf       	rjmp	.-12     	; 0x2e8 <main+0x10>
+		}
+
+		else if (PIND == 0x02)
+ 2f4:	80 b3       	in	r24, 0x10	; 16
+ 2f6:	82 30       	cpi	r24, 0x02	; 2
+ 2f8:	b9 f7       	brne	.-18     	; 0x2e8 <main+0x10>
+		{
+			while (1)
+			{
+				music();
+ 2fa:	0e 94 4b 00 	call	0x96	; 0x96 <music>
+				
+				if (PIND == 0x04)
+ 2fe:	80 b3       	in	r24, 0x10	; 16
+ 300:	84 30       	cpi	r24, 0x04	; 4
+ 302:	d9 f7       	brne	.-10     	; 0x2fa <main+0x22>
+ 304:	f1 cf       	rjmp	.-30     	; 0x2e8 <main+0x10>
+
+00000306 <_exit>:
+ 306:	f8 94       	cli
+
+00000308 <__stop_program>:
+ 308:	ff cf       	rjmp	.-2      	; 0x308 <__stop_program>
