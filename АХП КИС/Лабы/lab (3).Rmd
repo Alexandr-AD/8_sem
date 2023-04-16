@@ -1,0 +1,366 @@
+---
+title: "lab"
+output:
+  html_document: default
+  pdf_document: default
+date: "2023-03-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Лабораторная работа 5
+
+```{r}
+library(matrixcalc)
+library(foreach)
+N <- 100000
+Variant<-3
+```
+
+Для одноканальной системы массового обслуживания с ограничением на длину очереди $m$ составьте дифференциальные уравнения для вероятностей нахождения в заданных состояниях в зависимости от времени. Найдите эти вероятности при определенном в соответствии с вариантом значении $t$, а также при $t \to \infty$. Канал иногда может выходить из строя. Заявка, которая обслуживается в момент отказа канала ставится в очередь, если там есть места, в противном случае она покидает систему необслуженной. Входящий поток, поток обслуживания, поток отказов и поток восстановления простейшие с соответствующими интенсивностями $\lambda, \mu, \nu, \gamma$. Количество клиентов, от которых могут поступать заявки на обслуживание $k$. Начальные условия $P_0(0)=1$.
+
+Найти (теоретически и экспериментально):
+
+-   вероятность простоя;
+-   вероятность образования очереди;
+-   абсолютную пропускную способность;
+-   среднюю длину очереди;
+-   среднее время нахождения заявок в системе;
+-   среднее число заявок в системе;
+-   среднее время нахождения в очереди.
+
+```{r}
+set.seed(Variant) 
+m<-sample(c(4:18),1)
+mu<-runif(1)
+lambda<-runif(1)
+if (lambda>mu)
+  {current<-lambda; 
+   lambda<-mu; 
+   mu<-current}
+gamma<-runif(1)
+nu<-runif(1)
+if (gamma<nu)
+  {current<-nu; 
+   nu<-gamma; 
+   gamma<-current}
+if (sample(c(0:1),1)) 
+{k<-sample(c(4:7),1)} else {k<-"inf"}
+t<-runif(1)
+print("--------------")
+View(data.frame(lambda, mu, nu, gamma, k, m, t))
+```
+
+### Теоретическое решение
+
+Граф состояний имеет вид:
+
+Зададим состостояния:
+
+-   $S_0$ - канал свободен, очередь пуста, канал без отказов;
+-   $S_1$ - канал занят, очередь пуста, канал без отказов;
+-   $S_i, \; i \le m+1$ - канал занят, очередь состоит из $i-1$ заявки, канал без отказов;
+-   $S_0$ - очередь пуста, канал не работает;
+-   $S_1$ - очередь состоит из 1 заявки, канал не работает;
+-   $S_i, \; i \le m$ - очередь состоит из $i$ заявок, канал не работает.
+
+Состамим уравнения Колмогорова:
+
+$$
+\frac{dP_0(t)}{dt} = - (k \cdot \lambda + \nu) \cdot P_0(t) + \mu \cdot P_1(t) + \gamma \cdot P_{0c}(t) \\
+\frac{dP_1(t)}{dt} = - (k \cdot \lambda + \nu + \mu) \cdot P_1(t) + \mu \cdot P_2(t) + \gamma \cdot P_{1c}(t) + k \cdot \lambda \cdot P_0(t) \\
+... \\
+\frac{dP_m(t)}{dt} = - (k \cdot \lambda + \nu + \mu) \cdot P_m(t) + \mu \cdot P_{m+1}(t) + \gamma \cdot P_{mc}(t) + k \cdot \lambda \cdot P_{m-1}(t) \\
+\frac{dP_{m+1}(t)}{dt} = - (\nu + \mu) \cdot P_{m+1}(t) + k \cdot \lambda \cdot P_{m}(t) \\
+\frac{dP_{0c}(t)}{dt} = - (k \cdot \lambda + \gamma) \cdot P_{0c}(t) + \nu \cdot P_{0}(t) \\
+\frac{dP_{1c}(t)}{dt} = - (k \cdot \lambda + \gamma) \cdot P_{1c}(t) + \nu \cdot P_{1}(t) + k \cdot \lambda \cdot P_{0c}(t) \\
+... \\
+\frac{dP_{(m-1)c}(t)}{dt} = - (k \cdot \lambda + \gamma) \cdot P_{(m-1)c}(t) + \nu \cdot P_{m-1}(t) + k \cdot \lambda \cdot P_{(m-2)c}(t) \\
+\frac{dP_{mc}(t)}{dt} = - \gamma \cdot P_{mc}(t) + \nu \cdot P_{m}(t) + \nu \cdot P_{m+1}(t) + k \cdot \lambda \cdot P_{(m-1)c}\\
+$$
+
+Составим систему дифференциальных уравнений для заданного $m=8$:
+
+$$
+\begin{cases}
+\frac{dP_0(t)}{dt} = - (k \cdot \lambda + \nu) \cdot P_0(t) + \mu \cdot P_1(t) + \gamma \cdot P_{0c}(t) \\
+\frac{dP_1(t)}{dt} = - (k \cdot \lambda + \nu + \mu) \cdot P_1(t) + \mu \cdot P_2(t) + \gamma \cdot P_{1c}(t) + k \cdot \lambda \cdot P_0(t) \\
+\frac{dP_2(t)}{dt} = - (k \cdot \lambda + \nu + \mu) \cdot P_2(t) + \mu \cdot P_3(t) + \gamma \cdot P_{2c}(t) + k \cdot \lambda \cdot P_1(t) \\
+\frac{dP_3(t)}{dt} = - (k \cdot \lambda + \nu + \mu) \cdot P_3(t) + \mu \cdot P_4(t) + \gamma \cdot P_{3c}(t) + k \cdot \lambda \cdot P_2(t) \\
+\frac{dP_4(t)}{dt} = - (k \cdot \lambda + \nu + \mu) \cdot P_4(t) + \mu \cdot P_5(t) + \gamma \cdot P_{4c}(t) + k \cdot \lambda \cdot P_3(t) \\
+\frac{dP_5(t)}{dt} = - (k \cdot \lambda + \nu + \mu) \cdot P_5(t) + \mu \cdot P_6(t) + \gamma \cdot P_{5c}(t) + k \cdot \lambda \cdot P_4(t) \\
+\frac{dP_6(t)}{dt} = - (k \cdot \lambda + \nu + \mu) \cdot P_6(t) + \mu \cdot P_7(t) + \gamma \cdot P_{6c}(t) + k \cdot \lambda \cdot P_5(t) \\
+\frac{dP_7(t)}{dt} = - (k \cdot \lambda + \nu + \mu) \cdot P_7(t) + \mu \cdot P_8(t) + \gamma \cdot P_{7c}(t) + k \cdot \lambda \cdot P_6(t) \\
+\frac{dP_8(t)}{dt} = - (k \cdot \lambda + \nu + \mu) \cdot P_8(t) + \mu \cdot P_{9}(t) + \gamma \cdot P_{8c}(t) + k \cdot \lambda \cdot P_{7}(t) \\
+\frac{dP_{9}(t)}{dt} = - (\nu + \mu) \cdot P_{9}(t) + k \cdot \lambda \cdot P_{8}(t) \\
+\frac{dP_{0c}(t)}{dt} = - (k \cdot \lambda + \gamma) \cdot P_{0c}(t) + \nu \cdot P_{0}(t) \\
+\frac{dP_{1c}(t)}{dt} = - (k \cdot \lambda + \gamma) \cdot P_{1c}(t) + \nu \cdot P_{1}(t) + k \cdot \lambda \cdot P_{0c}(t) \\
+\frac{dP_{2c}(t)}{dt} = - (k \cdot \lambda + \gamma) \cdot P_{2c}(t) + \nu \cdot P_{2}(t) + k \cdot \lambda \cdot P_{1c}(t) \\
+\frac{dP_{3c}(t)}{dt} = - (k \cdot \lambda + \gamma) \cdot P_{3c}(t) + \nu \cdot P_{3}(t) + k \cdot \lambda \cdot P_{2c}(t) \\
+\frac{dP_{4c}(t)}{dt} = - (k \cdot \lambda + \gamma) \cdot P_{4c}(t) + \nu \cdot P_{4}(t) + k \cdot \lambda \cdot P_{3c}(t) \\
+\frac{dP_{5c}(t)}{dt} = - (k \cdot \lambda + \gamma) \cdot P_{5c}(t) + \nu \cdot P_{5}(t) + k \cdot \lambda \cdot P_{4c}(t) \\
+\frac{dP_{6c}(t)}{dt} = - (k \cdot \lambda + \gamma) \cdot P_{6c}(t) + \nu \cdot P_{6}(t) + k \cdot \lambda \cdot P_{5c}(t) \\
+\frac{dP_{7c}(t)}{dt} = - (k \cdot \lambda + \gamma) \cdot P_{7c}(t) + \nu \cdot P_{7}(t) + k \cdot \lambda \cdot P_{6c}(t) \\
+\frac{dP_{8c}(t)}{dt} = - \gamma \cdot P_{8c}(t) + \nu \cdot P_{8}(t) + \nu \cdot P_{9}(t) + k \cdot \lambda \cdot P_{7c}(T)\\
+\end{cases}
+$$
+
+Решим её числено для $t_0 = 0.7627319$.
+
+![](./test.png)
+
+Получились следующие результаты
+
+$$
+P_0(t_0) = 0.2875817184303237 \\
+P_1(t_0) = 0.2677514713609638 \\
+P_2(t_0) = 0.1574611319023322 \\
+P_3(t_0) = 0.0668298155977668 \\
+P_4(t_0) = 0.02206958659049668 \\
+P_5(t_0) = 0.005948713971173864 \\
+P_6(t_0) = 0.001352538245461897 \\
+P_7(t_0) = 2.656967148921484 \cdot 10^{-4} \\
+P_8(t_0) = 4.611226648320073 \cdot 10^{-5} \\
+P_9(t_0) = 7.998956488499166 \cdot10^{-6} \\
+P_{0c}(t_0) = 0.05434871183404531 \\
+P_{1c}(t_0) = 0.06575314456241696 \\
+P_{2c}(t_0) = 0.0427074267608414 \\
+P_{3c}(t_0) = 0.0190788393534204 \\
+P_{4c}(t_0) = 0.006498126720246877 \\
+P_{5c}(t_0) = 0.001787797017442954 \\
+P_{6c}(t_0) = 4.124325199923006 \cdot 10^{-4} \\
+P_{7c}(t_0) = 8.189587653448028 \cdot 10^{-5}\\
+P_{8c}(t_0) = 1.684131866168772 \cdot 10^{-6} \\
+$$
+
+Найдём финальные вероятности. Для этого следует решить следующую систему:
+
+$$
+\begin{cases}
+0 = - (k \cdot \lambda + \nu) \cdot P_0 + \mu \cdot P_1 + \gamma \cdot P_{0c} \\
+0 = - (k \cdot \lambda + \nu + \mu) \cdot P_1 + \mu \cdot P_2 + \gamma \cdot P_{1c} + k \cdot \lambda \cdot P_0 \\
+0 = - (k \cdot \lambda + \nu + \mu) \cdot P_2 + \mu \cdot P_3 + \gamma \cdot P_{2c} + k \cdot \lambda \cdot P_1 \\
+0 = - (k \cdot \lambda + \nu + \mu) \cdot P_3 + \mu \cdot P_4 + \gamma \cdot P_{3c} + k \cdot \lambda \cdot P_2 \\
+0 = - (k \cdot \lambda + \nu + \mu) \cdot P_4 + \mu \cdot P_5 + \gamma \cdot P_{4c} + k \cdot \lambda \cdot P_3 \\
+0 = - (k \cdot \lambda + \nu + \mu) \cdot P_5 + \mu \cdot P_6 + \gamma \cdot P_{5c} + k \cdot \lambda \cdot P_4 \\
+0 = - (k \cdot \lambda + \nu + \mu) \cdot P_6 + \mu \cdot P_7 + \gamma \cdot P_{6c} + k \cdot \lambda \cdot P_5 \\
+0 = - (k \cdot \lambda + \nu + \mu) \cdot P_7 + \mu \cdot P_8 + \gamma \cdot P_{7c} + k \cdot \lambda \cdot P_6 \\
+0 = - (k \cdot \lambda + \nu + \mu) \cdot P_8 + \mu \cdot P_9 + \gamma \cdot P_{8c} + k \cdot \lambda \cdot P_7 \\
+0 = - (\nu + \mu) \cdot P_9 + k \cdot \lambda \cdot P_8 \\
+0 = - (k \cdot \lambda + \gamma) \cdot P_{0c} + \nu \cdot P_0 \\
+0 = - (k \cdot \lambda + \gamma) \cdot P_{1c} + \nu \cdot P_1 + k \cdot \lambda \cdot P_{0c} \\
+0 = - (k \cdot \lambda + \gamma) \cdot P_{2c} + \nu \cdot P_2 + k \cdot \lambda \cdot P_{1c} \\
+0 = - (k \cdot \lambda + \gamma) \cdot P_{3c} + \nu \cdot P_3 + k \cdot \lambda \cdot P_{2c} \\
+0 = - (k \cdot \lambda + \gamma) \cdot P_{4c} + \nu \cdot P_4 + k \cdot \lambda \cdot P_{3c} \\
+0 = - (k \cdot \lambda + \gamma) \cdot P_{5c} + \nu \cdot P_5 + k \cdot \lambda \cdot P_{4c} \\
+0 = - (k \cdot \lambda + \gamma) \cdot P_{6c} + \nu \cdot P_6 + k \cdot \lambda \cdot P_{5c} \\
+0 = - (k \cdot \lambda + \gamma) \cdot P_{7c} + \nu \cdot P_7 + k \cdot \lambda \cdot P_{6c} \\
+0 = - \gamma \cdot P_{8c} + \nu \cdot P_8 + \nu \cdot P_9 + k \cdot \lambda \cdot P_{7c} \\
+\sum_{i=0}^9P_i + \sum_{i=0}^8P_{ic} = 1
+\end{cases}
+$$
+
+![](./test_2.png) ![](./test_3.png) ![](./test_4.png)
+
+Получили следующие вероятности:
+
+$$
+P_0 = 2.310436285708199 \cdot 10^{-4} \\
+P_1 = 5.211767410355034 \cdot 10^{-4} \\
+P_2 = 0.001221040486976098 \\
+P_3 = 0.002888368889986015 \\
+P_4 = 0.006848646705088011 \\
+P_5 = 0.01624832845884428 \\
+P_6 = 0.03855441339699237 \\
+P_7 = 0.09148597366695017 \\
+P_8 = 0.2170893862369745 \\
+P_9 = 0.3048533822112512 \\
+P_{0c} = 3.303987532850411 \cdot 10^{-5} \\
+P_{1c} = 9.753208615219849 \cdot 10^{-5} \\
+P_{2c} = 2.42514036784483 \cdot 10^{-4} \\
+P_{3c} = 5.818830925847057 \cdot 10^{-4} \\
+P_{4c} = 0.001384482623349147 \\
+P_{5c} = 0.003287433172481473 \\
+P_{6c} = 0.00780209981886443 \\
+P_{7c} = 0.01851457175821206 \\
+P_{8c} = 0.2881146831135741 \\
+$$
+
+```{r}
+P <- c(2.310436285708199 * 10^(-4), 5.211767410355034 * 10^(-4), 0.001221040486976098, 0.002888368889986015, 0.006848646705088011, 0.01624832845884428, 0.03855441339699237, 0.09148597366695017, 0.2170893862369745, 0.3048533822112512)
+Pc <- c(3.303987532850411 * 10^(-5), 9.753208615219849 * 10^(-5), 2.42514036784483 * 10^(-4), 5.818830925847057 * 10^(-4), 0.001384482623349147, 0.003287433172481473, 0.00780209981886443, 0.01851457175821206, 0.2881146831135741)
+```
+
+Вероятность простоя: $$
+P_{прост} = P_0 = 2.310436285708199 \cdot 10^{-4}
+$$
+
+Вероятность образования очереди:
+
+$$
+P_{оч} = \sum_{i=1}^9P_i + \sum_{i=1}^8P_{ic} = 1 - P_0 - P_{0c} = 0.9997359
+$$
+
+```{r}
+P_q <- 1 - P[1] - Pc[1]
+P_q
+```
+
+Абсолютная пропускная способность:
+
+$$
+P_{отк} = P_9 + P_{8c} \\
+\lambda' = (1-P_{отк})\cdot \lambda \cdot k = (1-P_9 - P_{8c})\cdot \lambda \cdot k = 1.414488
+$$
+
+```{r}
+P_cancel <- P[9] + Pc[8]
+A <- (1-P_cancel) * k * lambda
+A
+```
+
+Среднее число заявок в системе:
+
+$$
+L_{сист} = \sum_{i=1}^{9}i\cdot P_i + \sum_{i=1}^{8}i\cdot P_{ic} = 7.978024
+$$
+
+```{r}
+L_sys <- sum(P * c(0:9)) + sum(Pc * c(0:8))
+L_sys
+```
+
+Среднее время нахождения заявок в системе:
+
+$$
+W_{сист} = \frac{L_{сист}}{\lambda'} = 5.640221
+$$
+
+```{r}
+W_sys <- L_sys / A
+W_sys
+```
+
+Среднее число заявок в системе:
+
+$$
+L_{оч} = \sum_{i=2}^{9}(i-1)\cdot P_i + \sum_{i=1}^{8}i\cdot P_{ic} = 7.298313
+$$
+
+```{r}
+L_q <- sum(P[2:10] * c(0:8)) + sum(Pc * c(0:8))
+L_q
+```
+
+Среднее время нахождения в очереди:
+
+$$
+W_{оч} = \frac{L_{оч}}{\lambda'} = 5.159686
+$$
+
+```{r}
+W_q <- L_q / A
+W_q
+```
+
+### Эксперимент
+
+```{r}
+exp <- function(k, m, lambda, nu, mu, gamma, N) {
+  time_in_queue <- rep(0, N)
+  time_in_system <- rep(0, N)
+  enter_in_queue <- rep(0, N)
+  queue_lens <- c()
+  tasK_in_system_counts <- c()
+  
+  tasK_in_serv <- 0
+  queue <- c()
+  
+  tasks_enter_time <- c()
+  for (i in c(1:N)) {
+    tasks_enter_time <- min(rexp(k, lambda))
+  }
+  task_index <- 1
+  
+  time <- 0
+  dt <- 0.1
+  tasK_event <- tasks[task_index]
+  sys_event <- 0
+  rep_event <- 0
+  brok_event <- rexp(1, nu)
+  
+  while (task_index <= N) {
+    if (time > tasK_event) { # событие появления задачи
+      if (all.eq(rep_event, 0)) { # если канал не на ременоте
+        if (!all.eq(sys_event, 0)) { # если канал занят
+          if (length(queue) != m) {
+            queue <- c(queue, task_index)
+            enter_in_queue[task_index] <- 1
+          }
+        } else {
+          sys_event <- rep(1, mu)
+          tasK_in_serv <- task_index
+        }
+      } else {
+        if (length(queue) != m) {
+          enter_in_queue[task_index] <- 1
+          queue <- c(queue, task_index)
+        }
+      }
+      
+      task_index <- task_index + 1
+      task_event <- tasks_enter_time[task_index] - (time - tasK_event)
+    }
+    
+    if (!all.eq(brok_event, 0) && time > brok_event) { # событие поломки канала
+      sys_event <- 0
+      if (!all.eq(sys_event, 0) && length(queue) != m) { # убрать в очередь если возможно текущую задачу
+        enter_in_queue[tasK_in_serv] <- 1
+        queue <- c(queue, tasK_in_serv)
+      }
+      
+      rep_event <- rexp(1, gamma) - (time - brok_event)
+      brok_event <- 0
+    }
+    
+    if (!all.eq(sys_event, 0) && time > sys_event) { # событие выполенения на сервере
+      time_in_system[queue[1]] <- sys_event - tasks_enter_time[tasK_in_serv]
+      
+      if (length(queue) != 0) { # если есть ещё задачи 
+        sys_event <- rexp(1, mu) - (time - sys_event)
+        tasK_in_serv <- queue[1]
+        time_in_queue[queue[1]] <-sys_event - tasks_enter_time[queue[1]]
+        queue <- queue[! queue %in% c(queue[1])]
+      }
+    }
+    
+    if (!all.eq(rep_event, 0) && time > rep_event) { # событие починки канала
+      if (length(queue) != 0) { # достатоть из очереди если есть задачи
+        sys_event <- rep(1, mu) - (time - rep_event)
+        tasK_in_serv <- queue[1]
+        time_in_queue[queue[1]] <- rep_event - tasks_enter_time[queue[1]]
+        queue <- queue[! queue %in% c(queue[1])]
+      }
+      
+      brok_event <- rep(1, nu) - (time - rep_event)
+      rep_event <- 0
+    }
+    
+    time <- time + dt
+    queue_lens <- c(queue_lens, length(queue))
+    if (!all.eq(sys_event, 0)) {
+      tasK_in_system_counts <- c(tasK_in_system_counts, 1 + length(queue))
+    } else {
+      tasK_in_system_counts <- c(tasK_in_system_counts, length(queue))
+    }
+  }
+  
+  return(list(L_q=mean(queue_lens), W_q=mean(time_in_queue),
+              W_sys=mean(time_in_system), L_sys=mean(tasK_in_system_counts),
+              P_q=(sum(enter_in_queue)/N)))
+}
+
+res <- exp(k, m, lambda, nu, mu, gamma, 1000)
+```
